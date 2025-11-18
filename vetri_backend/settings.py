@@ -106,7 +106,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://vetri-finance-frontendfolder-5pib.vercel.app/"
+    "https://vetri-finance-frontendfolder-5pib.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # needed for cookies / session auth
