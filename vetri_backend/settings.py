@@ -14,9 +14,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET", "dev-fallback-secret-change-in-productio
 # Debug mode – automatically False in production if env var not set
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-# Allow all hosts in dev, tighten in real production
-ALLOWED_HOSTS = ["*"]
-
+# Allowed hosts – tighten in production
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 # Application definition
 INSTALLED_APPS = [
@@ -30,6 +29,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
+    'channels',
 
     # Local apps
     'app',
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',           # ← MUST be first or very near top
+    'corsheaders.middleware.CorsMiddleware',  # MUST be first
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,17 +66,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vetri_backend.wsgi.application'
-ASGI_APPLICATION = 'vetri_backend.asgi.application'   # fixed typo
+ASGI_APPLICATION = 'vetri_backend.asgi.application'
 
-
-# Database (SQLite for now – change to PostgreSQL in production)
+# Database (SQLite for dev, use PostgreSQL in production)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Channels (WebSocket) – in-memory for dev, switch to Redis in prod
 CHANNEL_LAYERS = {
@@ -85,7 +83,6 @@ CHANNEL_LAYERS = {
     }
 }
 
-
 # DRF settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -93,12 +90,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 # CORS SETTINGS – SECURE & WORKS WITH YOUR VERCEL FRONTEND
 FRONTEND_URL = os.getenv(
     "FRONTEND_URL",
-    "https://vetri-finance-frontendfolder.vercel.app"  # change only when you rename the Vercel project
-)
+    "https://vetri-finance-frontendfolder.vercel.app"
+).rstrip("/")  # remove trailing slash if present
 
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
@@ -106,21 +102,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://vetri-finance-frontendfolder-5pib.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # needed for cookies / session auth
 
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
-
-# NEVER use this in production
-# CORS_ALLOW_ALL_ORIGINS = True  ← removed completely
-
+# CSRF Trusted Origins – must match frontend domain with scheme and no trailing slash
+CSRF_TRUSTED_ORIGINS = [origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith("http")]
 
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
