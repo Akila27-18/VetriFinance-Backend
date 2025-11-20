@@ -109,7 +109,7 @@ REST_FRAMEWORK = {
 # -------------------------------
 FRONTEND_URL = os.getenv(
     "FRONTEND_URL",
-    "https://vetri-finance-frontendfolder-5pib.vercel.app"
+    "https://vetri-finance-frontendfolder-ztv6.vercel.app/"
 ).rstrip("/")
 
 CORS_ALLOWED_ORIGINS = [
